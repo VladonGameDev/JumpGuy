@@ -8,6 +8,7 @@ public class FirstLevelObjectsSpawn : MonoBehaviour
     public DifficultyStatsTracker statsTracker;
 
     public event System.Action<GameObject> OnObstacleSpawned;
+    public event System.Action<float> OnSafeZoneSpawned;
 
     [System.Serializable]
     public class ObstaclesPrefab
@@ -80,6 +81,12 @@ public class FirstLevelObjectsSpawn : MonoBehaviour
 
     public Transform playerTransform;
 
+    public float LastObstacleX => GetLastObstacleX();
+
+    public IReadOnlyList<GameObject> SpawnedObstacles => spawnedObstacles;
+
+    public IReadOnlyList<GameObject> SpawnedSafeZones => spawnedSafeZones;
+
     private const float obstacleSpeed = 5f;
 
     private List<GameObject> spawnedObstacles = new List<GameObject>();
@@ -135,7 +142,7 @@ public class FirstLevelObjectsSpawn : MonoBehaviour
         float currentSpeed = obstacleSpeed;
         if (progressionManager != null)
         {
-            currentSpeed *= progressionManager.TotalSpeedIndex;
+            currentSpeed *= progressionManager.WorldSpeedIndex;
         }
 
         float moveAmount = currentSpeed * Time.deltaTime;
@@ -437,6 +444,8 @@ public class FirstLevelObjectsSpawn : MonoBehaviour
 
         float distanceMultiplier = GetDistanceMultiplier();
         float currentX = GetLastObstacleX() + (Random.Range(progressionManager.CurrentPhase.minDistance, progressionManager.CurrentPhase.maxDistance) * distanceMultiplier);
+
+        OnSafeZoneSpawned?.Invoke(currentX);
 
         if (zone.openingPrefab != null)
             spawnedSafeZones.Add(Instantiate(zone.openingPrefab, new Vector3(currentX, zone.yPosition, 0f), Quaternion.identity));

@@ -45,7 +45,7 @@ public class WorldCreator : MonoBehaviour
 
     void MoveRoads()
     {
-        float currentSpeed = progressionManager != null ? progressionManager.TotalSpeedIndex : 1f;
+        float currentSpeed = progressionManager != null ? progressionManager.WorldSpeedIndex : 1f;
         foreach (GameObject road in spawnedRoads)
         {
             road.transform.Translate(Vector3.left * roadSpeed * currentSpeed * Time.deltaTime);

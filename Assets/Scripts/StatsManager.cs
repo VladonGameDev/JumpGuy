@@ -6,11 +6,12 @@ public class StatsManager : MonoBehaviour
     public RunProgressionManager progressionManager;
 
     [Header("Settings")]
-    public float baseScoreRate = 10f; // 10 очков в секунду
+    public float baseScoreRate = 10f;
     public string recordKey = "HighScore";
     public string coinsKey = "Coins";
 
     private float currentScore = 0f;
+    private float pendingScore = 0f;
     private int displayedScore = 0;
     private int highScore = 0;
 
@@ -21,35 +22,42 @@ public class StatsManager : MonoBehaviour
         highScore = PlayerPrefs.GetInt(recordKey, 0);
 
         currentScore = 0f;
+        pendingScore = 0f;
         displayedScore = 0;
     }
 
     void Update()
     {
-        if (progressionManager != null && progressionManager.IsRunning)
+        if (progressionManager == null || !progressionManager.IsRunning) return;
+
+        AddScore(baseScoreRate * progressionManager.CurrentPhase.scoreMultiplier * Time.deltaTime);
+
+        recordCheckTimer += Time.deltaTime;
+        if (recordCheckTimer >= 1f)
         {
-            float scoreMultiplier = progressionManager.CurrentPhase.scoreMultiplier;
-            currentScore += baseScoreRate * scoreMultiplier * Time.deltaTime;
-
-            int newScore = Mathf.FloorToInt(currentScore);
-            if (newScore != displayedScore)
+            recordCheckTimer = 0f;
+            if (displayedScore > highScore)
             {
-                displayedScore = newScore;
-            }
-
-            // ѕроверка рекорда (раз в секунду)
-            recordCheckTimer += Time.deltaTime;
-            if (recordCheckTimer >= 1f)
-            {
-                recordCheckTimer = 0f;
-                if (displayedScore > highScore)
-                {
-                    highScore = displayedScore;
-                    PlayerPrefs.SetInt(recordKey, highScore);
-                    PlayerPrefs.Save();
-                }
+                highScore = displayedScore;
+                PlayerPrefs.SetInt(recordKey, highScore);
+                PlayerPrefs.Save();
             }
         }
+    }
+
+    public void AddScore(float amount)
+    {
+        float value = amount * BoosterEffects.ScoreMultiplier;
+        if (BoosterEffects.BoosterActive(BoosterType.HalfScore)) value *= 0.5f;
+
+        pendingScore += value;
+
+        int whole = Mathf.FloorToInt(pendingScore);
+        if (whole <= 0) return;
+
+        pendingScore -= whole;
+        currentScore += whole;
+        displayedScore = Mathf.FloorToInt(currentScore);
     }
 
     public int GetCurrentScore()
@@ -64,8 +72,6 @@ public class StatsManager : MonoBehaviour
 
     public void AddCoins(int amount)
     {
-        int currentCoins = PlayerPrefs.GetInt(coinsKey, 0);
-        currentCoins += amount;
-        PlayerPrefs.SetInt(coinsKey, currentCoins);
+        PlayerPrefs.SetInt(coinsKey, PlayerPrefs.GetInt(coinsKey, 0) + amount);
     }
 }

@@ -58,7 +58,7 @@ public class PlayerTrailDebug : MonoBehaviour
         if (PlayerPrefs.GetInt("isGameStarted") != 1) return;
 
         float worldSpeed = obstacleSpeed;
-        if (progressionManager != null) worldSpeed = obstacleSpeed * progressionManager.TotalSpeedIndex;
+        if (progressionManager != null) worldSpeed = obstacleSpeed * progressionManager.WorldSpeedIndex;
 
         float moveAmount = worldSpeed * Time.deltaTime;
 

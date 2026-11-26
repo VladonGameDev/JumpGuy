@@ -79,7 +79,12 @@ public class PlayerMediator : MonoBehaviour
     {
         if (progressionManager != null)
         {
-            currentSpeedMultiplier = 1f + (progressionManager.TotalSpeedIndex - 1f) / 2f;
+            float speedFactor = 1f + (progressionManager.TotalSpeedIndex - 1f) / 2f;
+
+            // Замедление времени растягивает действия игрока во столько же раз:
+            // ролл, слайд, лонг-ролл, лонг-слайд, прыжок и лонг-прыжок длятся
+            // дольше, поэтому в слоу-мо их длина относительно мира сохраняется.
+            currentSpeedMultiplier = speedFactor * progressionManager.WorldSlowdown;
         }
         else
         {
